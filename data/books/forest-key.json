@@ -1,0 +1,73 @@
+{
+  "title": "The Forest Key",
+  "author": "Adventure Book Demo",
+  "difficulty": "EASY",
+  "sections": [
+    {
+      "id": 1,
+      "type": "BEGIN",
+      "text": "A locked gate stands at the edge of the forest. A narrow trail leads to an old cottage, while a dark tunnel runs under the gate.",
+      "options": [
+        {
+          "description": "Follow the trail to the cottage",
+          "gotoId": 2
+        },
+        {
+          "description": "Crawl through the dark tunnel",
+          "gotoId": 3,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": 10,
+            "text": "The tunnel collapses before you can escape."
+          }
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "NODE",
+      "text": "At the cottage, a keeper offers you a brass key. Thorn bushes cover the way back.",
+      "options": [
+        {
+          "description": "Take the key and cross the thorn bushes",
+          "gotoId": 4,
+          "consequence": {
+            "type": "LOSE_HEALTH",
+            "value": 3,
+            "text": "The thorns scratch your arms, but you reach the gate."
+          }
+        },
+        {
+          "description": "Rest before returning to the gate",
+          "gotoId": 5,
+          "consequence": {
+            "type": "GAIN_HEALTH",
+            "value": 2,
+            "text": "A warm meal restores your strength."
+          }
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "NODE",
+      "text": "You leave the cottage with the key and find a safe path to the gate.",
+      "options": [
+        {
+          "description": "Unlock the gate",
+          "gotoId": 4
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "END",
+      "text": "Your journey ends in the collapsed tunnel."
+    },
+    {
+      "id": 4,
+      "type": "END",
+      "text": "The brass key turns in the lock. The gate opens, and you step safely into the village."
+    }
+  ]
+}

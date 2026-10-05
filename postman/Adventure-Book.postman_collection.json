@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "Adventure Book API",
+    "description": "Run in order against a local backend. Creates one imported book and one saved game.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "healingBookId",
+      "value": ""
+    },
+    {
+      "key": "healingGameId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "List books",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/books"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Demo is playable', () => pm.expect(pm.response.json().find(book => book.id === 'forest-key').valid).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Import with optional metadata and large healing",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/books",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sections\": [\n    {\n      \"id\": 1,\n      \"type\": \"BEGIN\",\n      \"text\": \"Start\",\n      \"options\": [\n        {\n          \"description\": \"Heal\",\n          \"gotoId\": 2,\n          \"consequence\": {\n            \"type\": \"GAIN_HEALTH\",\n            \"value\": 150,\n            \"text\": \"Restored\"\n          }\n        }\n      ]\n    },\n    {\n      \"id\": 2,\n      \"type\": \"END\",\n      \"text\": \"End\",\n      \"options\": [\n        {\n          \"description\": \"Unused\",\n          \"gotoId\": 1\n        }\n      ]\n    }\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "const book = pm.response.json();",
+              "pm.collectionVariables.set('healingBookId', book.id);",
+              "pm.test('Optional difficulty and accepted structure', () => { pm.expect(book.valid).to.eql(true); pm.expect(book.difficulty).to.eql(null); });",
+              "pm.test('Readable metadata fallbacks', () => { pm.expect(book.title).to.eql(book.id); pm.expect(book.author).to.eql('Unknown'); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Start imported healing book",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/games",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"bookId\":\"{{healingBookId}}\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('healingGameId', pm.response.json().id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Heal above starting health and end",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/api/games/{{healingGameId}}/choices",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"index\":0,\"revision\":0}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Healing and ending', () => { const game = pm.response.json(); pm.expect(game.health).to.eql(160); pm.expect(game.status).to.eql('WON'); pm.expect(game.choices).to.eql([]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Restore health above ten",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/games/{{healingGameId}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Restored health', () => pm.expect(pm.response.json().health).to.eql(160));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

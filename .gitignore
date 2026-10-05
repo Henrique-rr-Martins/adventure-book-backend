@@ -1,0 +1,10 @@
+/target/
+/data/games/
+/data/books/*
+!/data/books/forest-key.json
+/.idea/
+/.vscode/
+*.log
+*.tmp
+.env
+.env.*
